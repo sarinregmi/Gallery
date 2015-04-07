@@ -1,10 +1,12 @@
 package com.sarinregmi.gallery;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -33,6 +35,7 @@ public class GalleryActivity extends Activity {
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
     private GridAdapter mGridAdapter;
     private ArrayList<String> mImageUrls;
+    private int mNumberOfItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +47,8 @@ public class GalleryActivity extends Activity {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 loadImages(query);
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mImageSearchView.getWindowToken(), 0);
                 return true;
             }
 
@@ -68,6 +73,10 @@ public class GalleryActivity extends Activity {
         } catch (UnsupportedEncodingException e) {
             Log.e(LOG_TAG, e.getMessage());
         }
+        sendRequest(url);
+    }
+
+    private void sendRequest(String url) {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
