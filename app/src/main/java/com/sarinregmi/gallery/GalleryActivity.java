@@ -28,14 +28,17 @@ import java.util.ArrayList;
 public class GalleryActivity extends Activity {
 
     private static final String LOG_TAG = "GalleryActivity";
-    private static final String IMAGE_SEARCH_API_URL = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&q=";
+    private static final String IMAGE_SEARCH_API_URL = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&imgsz=medium&start=";
+    private static final int TOTAL_NUMBER_OF_ITEMS = 64; // API limit
+    private static final int ITEMS_PER_REQUEST = 8; // API max limit
+    private static final int NUMBER_OF_COLUMNS = 2;
 
     private SearchView mImageSearchView;
     private RecyclerView mPhotoGridView;
-    private StaggeredGridLayoutManager staggeredGridLayoutManager;
+    private StaggeredGridLayoutManager mStaggeredGridLayoutManager;
     private GridAdapter mGridAdapter;
-    private ArrayList<String> mImageUrls;
-    private int mNumberOfItems;
+    private ArrayList<ImageObject> mImageObjects;
+    private int mNumberOfColumns;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,21 +62,23 @@ public class GalleryActivity extends Activity {
         });
 
         mGridAdapter = new GridAdapter(this);
-        staggeredGridLayoutManager = new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        mStaggeredGridLayoutManager = new StaggeredGridLayoutManager(NUMBER_OF_COLUMNS, StaggeredGridLayoutManager.VERTICAL);
         mPhotoGridView = (RecyclerView) findViewById(R.id.image_recycler_view);
-        mPhotoGridView.setLayoutManager(staggeredGridLayoutManager);
+        mPhotoGridView.setLayoutManager(mStaggeredGridLayoutManager);
         mPhotoGridView.setAdapter(mGridAdapter);
     }
 
     private void loadImages(String query) {
-        mImageUrls = new ArrayList<String>();
+        mImageObjects = new ArrayList<ImageObject>();
         String url = IMAGE_SEARCH_API_URL;
-        try {
-            url = url + URLEncoder.encode(query, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            Log.e(LOG_TAG, e.getMessage());
+        for (int i = 0; i < TOTAL_NUMBER_OF_ITEMS; i = i + ITEMS_PER_REQUEST) {
+            try {
+                url = url + i + "&q=" + URLEncoder.encode(query, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+            sendRequest(url);
         }
-        sendRequest(url);
     }
 
     private void sendRequest(String url) {
@@ -81,19 +86,22 @@ public class GalleryActivity extends Activity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject json) {
+                        int itemsIndex = mImageObjects.size();
                         try {
                             JSONObject responseData = json.getJSONObject("responseData");
                             JSONArray results = responseData.getJSONArray("results");
                             for (int i = 0; i < results.length(); i++) {
                                 JSONObject jsonObject = results.getJSONObject(i);
                                 String imgUrl = jsonObject.getString("tbUrl");
-                                mImageUrls.add(imgUrl);
+                                int height = jsonObject.getInt("height");
+                                int width = jsonObject.getInt("width");
+                                mImageObjects.add(new ImageObject(imgUrl, height, width));
                             }
+                            mGridAdapter.setImageDataSet(mImageObjects);
+                            mStaggeredGridLayoutManager.onItemsAdded(mPhotoGridView, itemsIndex, results.length());
                         } catch (JSONException e) {
                             Log.e(LOG_TAG, e.getMessage());
                         }
-                        mGridAdapter.setImageUrls(mImageUrls);
-                        mGridAdapter.notifyDataSetChanged();
                     }
                 },
                 new Response.ErrorListener() {
@@ -103,7 +111,6 @@ public class GalleryActivity extends Activity {
                         Log.e(LOG_TAG, e.getMessage());
                     }
                 });
-
         VolleyManager.getRequestQueue(this).add(request);
     }
 

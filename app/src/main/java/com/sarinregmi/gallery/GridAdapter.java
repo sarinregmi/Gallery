@@ -14,15 +14,15 @@ import java.util.ArrayList;
 import static com.sarinregmi.gallery.R.id.icon;
 
 public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
-    private ArrayList<String> mImageUrls = new ArrayList<String>();
+    private ArrayList<ImageObject> mImageObjects = new ArrayList<ImageObject>();
     private final Context mContext;
 
     public GridAdapter(Context context) {
         mContext = context;
     }
 
-    public void setImageUrls(ArrayList<String> urls) {
-        mImageUrls = urls;
+    public void setImageDataSet(ArrayList<ImageObject> data) {
+        mImageObjects = data;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -43,11 +43,11 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.mImageView.setImageUrl(mImageUrls.get(position), VolleyManager.getImageLoader(mContext));
+        holder.mImageView.setImageUrl(mImageObjects.get(position).getUrl(), VolleyManager.getImageLoader(mContext));
     }
 
     @Override
     public int getItemCount() {
-        return mImageUrls.size();
+        return mImageObjects.size();
     }
 }
