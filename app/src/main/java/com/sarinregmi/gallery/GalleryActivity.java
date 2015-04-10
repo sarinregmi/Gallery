@@ -22,7 +22,6 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 
 
 public class GalleryActivity extends Activity {
@@ -31,14 +30,13 @@ public class GalleryActivity extends Activity {
     private static final String IMAGE_SEARCH_API_URL = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&imgsz=medium&start=";
     private static final int TOTAL_NUMBER_OF_ITEMS = 64; // API limit
     private static final int ITEMS_PER_REQUEST = 8; // API max limit
-    private static final int NUMBER_OF_COLUMNS = 2;
+    private static final int NUMBER_OF_COLUMNS = 4;
 
     private SearchView mImageSearchView;
     private RecyclerView mPhotoGridView;
     private StaggeredGridLayoutManager mStaggeredGridLayoutManager;
     private GridAdapter mGridAdapter;
-    private ArrayList<ImageObject> mImageObjects;
-    private int mNumberOfColumns;
+    private int mNumberOfItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +67,7 @@ public class GalleryActivity extends Activity {
     }
 
     private void loadImages(String query) {
-        mImageObjects = new ArrayList<ImageObject>();
+        mNumberOfItems = 0;
         String url = IMAGE_SEARCH_API_URL;
         for (int i = 0; i < TOTAL_NUMBER_OF_ITEMS; i = i + ITEMS_PER_REQUEST) {
             try {
@@ -79,6 +77,7 @@ public class GalleryActivity extends Activity {
             }
             sendRequest(url);
         }
+
     }
 
     private void sendRequest(String url) {
@@ -86,19 +85,16 @@ public class GalleryActivity extends Activity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject json) {
-                        int itemsIndex = mImageObjects.size();
                         try {
                             JSONObject responseData = json.getJSONObject("responseData");
                             JSONArray results = responseData.getJSONArray("results");
                             for (int i = 0; i < results.length(); i++) {
                                 JSONObject jsonObject = results.getJSONObject(i);
-                                String imgUrl = jsonObject.getString("tbUrl");
+                                String imgUrl = jsonObject.getString("url");
                                 int height = jsonObject.getInt("height");
                                 int width = jsonObject.getInt("width");
-                                mImageObjects.add(new ImageObject(imgUrl, height, width));
+                                mGridAdapter.upsertImageObject(new ImageObject(imgUrl, height, width), mNumberOfItems++);
                             }
-                            mGridAdapter.setImageDataSet(mImageObjects);
-                            mStaggeredGridLayoutManager.onItemsAdded(mPhotoGridView, itemsIndex, results.length());
                         } catch (JSONException e) {
                             Log.e(LOG_TAG, e.getMessage());
                         }
