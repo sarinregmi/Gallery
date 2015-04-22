@@ -2,8 +2,15 @@
 <resources>
 
     <string name="app_name">Gallery</string>
-    <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="search_image">Search Image</string>
+    <string name="search_prompt">Searching images for %1$s...</string>
+    <string name="results_prompt">Image results for %1$s</string>
+    <string name="error_prompt">Network Error performing search</string>
+    <string name="title_activity_photo_viewer">PhotoViewer</string>
 
+    <string name="hello_world">Hello world!</string>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

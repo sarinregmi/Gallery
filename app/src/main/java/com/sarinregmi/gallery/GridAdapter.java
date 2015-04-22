@@ -2,10 +2,10 @@ package com.sarinregmi.gallery;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import com.android.volley.toolbox.NetworkImageView;
 import com.sarinregmi.gallery.volley.VolleyManager;
@@ -34,16 +34,19 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
     }
 
     public void addImageDataSet(ArrayList<ImageObject> dataSet) {
-        mImageObjects.addAll(dataSet);
-        // TODO
+        for (ImageObject imageObject : dataSet) {
+
+        }
     }
 
     public void upsertImageObject(ImageObject imageObject, int position) {
         if (getItemCount() <= position) {
             mImageObjects.add(imageObject);
             notifyItemInserted(position);
+            Log.v("TACO", "Item inserted at " + position);
         } else {
             mImageObjects.set(position, imageObject);
+            Log.v("TACO", "Item replaced at " + position);
             notifyItemChanged(position);
         }
     }
@@ -61,16 +64,13 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.image_item, parent, false);
         ViewHolder vh = new ViewHolder(v);
+        //vh.mImageView.setDefaultImageResId(R.drawable.ic_launcher);
         return vh;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        RelativeLayout.LayoutParams rlp = (RelativeLayout.LayoutParams)holder.mImageView.getLayoutParams();
         final ImageObject item = mImageObjects.get(position);
-        float ratio = item.getHeight()/item.getWidth();
-        rlp.height = (int)(rlp.width * ratio);
-        holder.mImageView.setLayoutParams(rlp);
         holder.mImageView.setImageUrl(mImageObjects.get(position).getUrl(), VolleyManager.getImageLoader(mContext));
     }
 
