@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="AppTheme" parent="android:Theme.Material.Light.NoActionBar.Fullscreen">
+    <style name="AppTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
+        <item name="android:actionBarStyle">@style/MyActionBarStyle</item>
+    </style>
+    <style name="MyActionBarStyle" parent="@android:style/Widget.Material.ActionBar.Solid">
+        <item name="android:displayOptions">showTitle</item>
     </style>
 </resources>

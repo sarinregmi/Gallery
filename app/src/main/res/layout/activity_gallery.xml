@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context=".GalleryActivity">
 
-    <LinearLayout
+  <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -13,7 +13,9 @@
         android:paddingRight="20dp"
         android:paddingBottom="15dp"
         android:orientation="vertical"
-        android:background="@android:color/holo_blue_dark">
+        android:elevation="1dp"
+        android:background="@android:color/holo_blue_dark"
+        android:visibility="gone">
         <SearchView
             android:id="@+id/searchView"
             android:layout_width="match_parent"
@@ -23,10 +25,9 @@
             android:queryHint="@string/search_image"
             android:iconifiedByDefault="false"
             android:background="@android:drawable/editbox_background_normal">
-            <requestFocus />
         </SearchView>
         <TextView
-            android:id="@+id/result_prompt"
+            android:id="@+id/status_prompt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
