@@ -4,56 +4,22 @@
     android:layout_height="match_parent"
     tools:context=".GalleryActivity">
 
-  <LinearLayout
-        android:id="@+id/header"
-        android:layout_width="match_parent"
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="@android:style/Widget.Holo.Light.ProgressBar.Inverse"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="20dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingBottom="15dp"
-        android:orientation="vertical"
-        android:elevation="1dp"
-        android:background="@android:color/holo_blue_dark"
-        android:visibility="gone">
-        <SearchView
-            android:id="@+id/searchView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:elevation="1dp"
-            android:queryHint="@string/search_image"
-            android:iconifiedByDefault="false"
-            android:background="@android:drawable/editbox_background_normal">
-        </SearchView>
-        <TextView
-            android:id="@+id/status_prompt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:layout_gravity="center_horizontal"
-            android:visibility="gone"/>
-    </LinearLayout>
+        android:padding="12dp"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"
+        android:animateLayoutChanges="true"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/image_recycler_view"
-        android:layout_marginRight="10dp"
-        android:layout_marginLeft="10dp"
+        android:layout_marginRight="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="@dimen/activity_vertical_margin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/header"
-        android:scrollbars="vertical" >
-        </android.support.v7.widget.RecyclerView>
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        style="@android:style/Widget.Holo.ProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/header"
-        android:layout_marginTop="30dp"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"/>
+        android:scrollbars="vertical"/>
 
 </RelativeLayout>

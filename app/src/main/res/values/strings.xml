@@ -10,4 +10,7 @@
     <string name="title_activity_photo_viewer">PhotoViewer</string>
     <string name="share_prompt">Share image url to...</string>
     <string name="search_title">Search</string>
+    <string name="server_error">API limit reached!</string>
+    <string name="network_error">Unable connect to server!</string>
+    <string name="transition_image">transition</string>
 </resources>
