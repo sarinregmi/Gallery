@@ -24,6 +24,7 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
     private ArrayList<ImageObject> mItemsToAdd;
     private Set<ImageObject> mErrorItems;
     private OnClickListener mOnClickListener;
+    private OnDataLoadFinishListener mOnDataLoadFinishListener;
     private boolean mIsCleaned;
     private Handler mHandler;
     private int mImageWidth;
@@ -37,6 +38,14 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
         mHandler = handler;
         mImageWidth = GridViewMetrics.getImageWidth(mContext);
         mIsCleaned = false;
+    }
+
+    public interface OnDataLoadFinishListener {
+        public void onDataLoadFinished();
+    }
+
+    public void setOnDataLoadFinishListener(OnDataLoadFinishListener dataLoadFinishListener) {
+        mOnDataLoadFinishListener = dataLoadFinishListener;
     }
 
     public void setOnClickListener(OnClickListener onClickListener) {
@@ -96,6 +105,10 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
         return mImageObjects.size();
     }
 
+    public int getAddedItemCount() {
+        return mItemsToAdd.size();
+    }
+
     public ArrayList<ImageObject> getImageDataSet() {
         return mImageObjects;
     }
@@ -124,43 +137,36 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
         int count = getItemCount();
         int animationDelay = GalleryActivity.ANIMATION_DELAY;
 
-//        // Add new set of items for first time
-//        if(count == 0) {
-//            mImageObjects.addAll(mItemsToAdd);
-//            notifyItemRangeInserted(count, mItemsToAdd.size());
-//            mItemsToAdd.clear();
-//        } else {
-            for (int i = 0; i < getItemCount(); i++) {
-                ImageObject item = mImageObjects.get(i);
-                // Replace non matching ones
-                if (!mItemsToAdd.contains(item)) {
-                    if (mItemsToAdd.size() > 0) {
-                        ImageObject itemToAdd = mItemsToAdd.remove(mItemsToAdd.size() - 1);
-                        mImageObjects.set(i, itemToAdd);
-                        final int position = i;
-                        mHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                notifyItemChanged(position);
-                            }
-                        }, i * animationDelay);
-                    } else {
-                        // Remove stray items, old items count greater than new items
-                        mImageObjects.remove(item);
-                        final int position = i;
-                        mHandler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                notifyItemRemoved(position);
-                            }
-                        }, i * animationDelay);
-                        i--;
-                    }
+        for (int i = 0; i < getItemCount(); i++) {
+            ImageObject item = mImageObjects.get(i);
+            // Replace non matching ones
+            if (!mItemsToAdd.contains(item)) {
+                if (mItemsToAdd.size() > 0) {
+                    ImageObject itemToAdd = mItemsToAdd.remove(mItemsToAdd.size() - 1);
+                    mImageObjects.set(i, itemToAdd);
+                    final int position = i;
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyItemChanged(position);
+                        }
+                    }, i * animationDelay);
                 } else {
-                    mItemsToAdd.remove(item);
+                    // Remove stray items, old items count greater than new items
+                    mImageObjects.remove(item);
+                    final int position = i;
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyItemRemoved(position);
+                        }
+                    }, i * animationDelay);
+                    i--;
                 }
+            } else {
+                mItemsToAdd.remove(item);
             }
- //       }
+        }
         // add new remaining items, new items count greater than old items
         mHandler.postDelayed(new  Runnable() {
              @Override
@@ -170,6 +176,9 @@ public class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
                      mImageObjects.addAll(mItemsToAdd);
                      notifyItemRangeInserted(index, mItemsToAdd.size());
                      mItemsToAdd.clear();
+                 }
+                 if (mOnDataLoadFinishListener != null) {
+                     mOnDataLoadFinishListener.onDataLoadFinished();
                  }
                  removeErrorItems();
              }

@@ -3,7 +3,6 @@ package com.sarinregmi.gallery;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,14 +11,13 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -34,11 +32,7 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-// Ripple effect not working on button press
-// Sharedelement activity switch
-// Toolbar impelementation for better UI
-
-public class GalleryActivity extends Activity implements View.OnClickListener {
+public class GalleryActivity extends Activity implements View.OnClickListener, GridAdapter.OnDataLoadFinishListener{
 
     private static final String LOG_TAG              = "GalleryActivity";
     private static final String IMAGE_SEARCH_API_URL = "https://ajax.googleapis.com/ajax/services/search/images?v=1.0&rsz=8&q=%s&start=%d&imgsz=large";
@@ -50,6 +44,7 @@ public class GalleryActivity extends Activity implements View.OnClickListener {
     public static final String POSITION_KEY          = "position";
 
     private ProgressBar mProgressBar;
+    private TextView mStatusView;
     private SearchView mImageSearchView;
     private RecyclerView mPhotoGridView;
     private StaggeredGridLayoutManager mStaggeredGridLayoutManager;
@@ -64,46 +59,27 @@ public class GalleryActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
-
         mHandler = new Handler();
-        int numberOfColumns = GridViewMetrics.getNumberOfColumns(this);
-
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        mGridAdapter = new GridAdapter(this, mHandler);
-        mGridAdapter.setOnClickListener(this);
-        mStaggeredGridLayoutManager = new StaggeredGridLayoutManager(numberOfColumns, StaggeredGridLayoutManager.VERTICAL);
-        mGridLayoutManager = new GridLayoutManager(this, numberOfColumns);
-        mPhotoGridView = (RecyclerView) findViewById(R.id.image_recycler_view);
-        mPhotoGridView.setLayoutManager(mGridLayoutManager);
-        //mPhotoGridView.setLayoutManager(mStaggeredGridLayoutManager);
-        mPhotoGridView.setAdapter(mGridAdapter);
-        mPhotoGridView.setHasFixedSize(true);
-
-        mPhotoGridView.getItemAnimator().setAddDuration(ANIMATION_DELAY);
-        mPhotoGridView.getItemAnimator().setMoveDuration(0);
-        mPhotoGridView.getItemAnimator().setChangeDuration(ANIMATION_DELAY);
-        mPhotoGridView.getItemAnimator().setRemoveDuration(0);
+        mStatusView = (TextView) findViewById(R.id.status_prompt);
+        setActionBar(toolbar);
+        setUpSearchView();
+        setUpRecyclerView();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.options_menu, menu);
-        MenuItem searchItem = menu.findItem(R.id.search);
-        mImageSearchView = (SearchView) searchItem.getActionView();
-
-        mImageSearchView.setIconifiedByDefault(false);
-        mImageSearchView.setQueryHint(getString(R.string.search_image));
+    private void setUpSearchView() {
+        mImageSearchView = (SearchView) findViewById(R.id.searchView);
         mImageSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             String query = "";
+
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (!query.isEmpty() && !query.equals(this.query)) {
                     mQuery = query;
                     loadImages();
                 }
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(mImageSearchView.getWindowToken(), 0);
+                hideKeyBoard();
                 return true;
             }
 
@@ -118,7 +94,24 @@ public class GalleryActivity extends Activity implements View.OnClickListener {
                 return false;
             }
         });
-        return true;
+    }
+
+    private void setUpRecyclerView() {
+        int numberOfColumns = GridViewMetrics.getNumberOfColumns(this);
+        mGridAdapter = new GridAdapter(this, mHandler);
+        mGridAdapter.setOnClickListener(this);
+        mGridAdapter.setOnDataLoadFinishListener(this);
+        mStaggeredGridLayoutManager = new StaggeredGridLayoutManager(numberOfColumns, StaggeredGridLayoutManager.VERTICAL);
+        mGridLayoutManager = new GridLayoutManager(this, numberOfColumns);
+        mPhotoGridView = (RecyclerView) findViewById(R.id.image_recycler_view);
+        mPhotoGridView.setLayoutManager(mGridLayoutManager);
+        mPhotoGridView.setAdapter(mGridAdapter);
+        mPhotoGridView.setHasFixedSize(true);
+
+        mPhotoGridView.getItemAnimator().setAddDuration(ANIMATION_DELAY);
+        mPhotoGridView.getItemAnimator().setMoveDuration(ANIMATION_DELAY);
+        mPhotoGridView.getItemAnimator().setChangeDuration(ANIMATION_DELAY);
+        mPhotoGridView.getItemAnimator().setRemoveDuration(0);
     }
 
     private void loadImages() {
@@ -126,7 +119,9 @@ public class GalleryActivity extends Activity implements View.OnClickListener {
         mHandler.removeCallbacksAndMessages(null);
         mGridAdapter.reInitialize();
         mPendingRequests = 0;
-        animateProgressBar(1.0f, View.VISIBLE, mProgressBar.getHeight());
+        mProgressBar.setVisibility(View.VISIBLE);
+        mStatusView.setVisibility(View.VISIBLE);
+        updateStatusMessage(String.format(getString(R.string.search_prompt), mQuery));
         for (int i = 0; i < TOTAL_NUMBER_OF_ITEMS; i = i + ITEMS_PER_REQUEST) {
             try {
                 String url = String.format(IMAGE_SEARCH_API_URL, URLEncoder.encode(mQuery, "UTF-8"), i);
@@ -155,22 +150,21 @@ public class GalleryActivity extends Activity implements View.OnClickListener {
                         }
                     } catch (JSONException e) {
                         Log.e(LOG_TAG, e.getMessage());
+                        updateStatusMessage(getString(R.string.server_error));
                         e.printStackTrace();
-                        animateProgressBar(0.0f, View.GONE, 0);
-                        Toast.makeText(GalleryActivity.this, getString(R.string.server_error), Toast.LENGTH_SHORT).show();
                     }
                     mPendingRequests--;
                     if(mPendingRequests == 0) {
                         mGridAdapter.sync();
-                        animateProgressBar(0.0f, View.GONE, 0);
                     }
                 }
             },
             new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError e) {
-                    Toast.makeText(GalleryActivity.this,getString(R.string.network_error) , Toast.LENGTH_SHORT).show();
-                    animateProgressBar(0.0f, View.GONE, 0);
+                    Toast.makeText(GalleryActivity.this,getString(R.string.network_error), Toast.LENGTH_SHORT).show();
+                    mProgressBar.setVisibility(View.INVISIBLE);
+                    updateStatusMessage(getString(R.string.network_error));
                 }
             });
         imageRequest.setTag(this);
@@ -184,23 +178,40 @@ public class GalleryActivity extends Activity implements View.OnClickListener {
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putParcelableArrayListExtra(DATASET_KEY, mGridAdapter.getImageDataSet());
         intent.putExtra(POSITION_KEY, itemPosition);
-
-        String transitionName = getString(R.string.transition_image);
-        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(this, v, transitionName);
-        startActivity(intent, options.toBundle());
+        startActivity(intent);
     }
 
-    private void animateProgressBar(float alpha, final int visibility, float translation) {
-        mPhotoGridView.animate().translationY(translation).setDuration(500);
-        mProgressBar.animate()
-            .alpha(alpha)
+    private void hideKeyBoard() {
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.hideSoftInputFromWindow(mImageSearchView.getWindowToken(), 0);
+                }
+            }
+        }, ANIMATION_DELAY);
+    }
+
+    private void updateStatusMessage(final String message) {
+        mStatusView.animate()
+            .alpha(0.0f)
             .setDuration(ANIMATION_DELAY)
             .setListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     super.onAnimationEnd(animation);
-                    mProgressBar.setVisibility(visibility);
+                    mStatusView.setText(message);
+                    mStatusView.animate().setListener(null);
+                    mStatusView.animate().alpha(1.0f);
                 }
             });
+    }
+
+    @Override
+    public void onDataLoadFinished() {
+        mProgressBar.setVisibility(View.INVISIBLE);
+        updateStatusMessage(String.format(getString(R.string.results_prompt), mQuery));
+        hideKeyBoard();
     }
 }

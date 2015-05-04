@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -43,14 +44,18 @@ public class ImageFragment extends Fragment implements View.OnClickListener {
         ImageView imageView = (ImageView) root.findViewById(R.id.image_view);
         root.findViewById(R.id.close).setOnClickListener(this);
         root.findViewById(R.id.share).setOnClickListener(this);
-
+        final ProgressBar progressBar = (ProgressBar) root.findViewById(R.id.progress_bar);
+        final View errorIcon = root.findViewById(R.id.errorIcon);
         Picasso.with(getActivity()).load(mImageUrl).into(imageView, new Callback() {
             @Override
             public void onSuccess() {
+                progressBar.setVisibility(View.GONE);
             }
 
             @Override
             public void onError() {
+                progressBar.setVisibility(View.GONE);
+                errorIcon.setVisibility(View.VISIBLE);
                 Log.w(LOG_TAG, "Error loading file " + mImageUrl);
             }
         });

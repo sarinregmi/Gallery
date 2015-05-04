@@ -20,6 +20,7 @@
             </intent-filter>
         </activity>
         <activity
+            android:theme="@style/PhotoViewerTheme"
             android:name=".PhotoViewerActivity"
             android:label="@string/title_activity_photo_viewer">
         </activity>

@@ -20,7 +20,6 @@ public class PhotoViewerActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_viewer);
-        getActionBar().hide();
 
         int position = getIntent().getIntExtra(GalleryActivity.POSITION_KEY, 0);
         ArrayList<ImageObject> data = getIntent().getParcelableArrayListExtra(GalleryActivity.DATASET_KEY);

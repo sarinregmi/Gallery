@@ -4,13 +4,14 @@
     <string name="app_name">Image Search</string>
     <string name="action_settings">Settings</string>
     <string name="search_image">Search for Image...</string>
-    <string name="search_prompt">Searching images for %1$s...</string>
-    <string name="results_prompt">Image results for %1$s</string>
+    <string name="search_prompt">Searching images for \'%1$s\'...</string>
+    <string name="results_prompt">Image results for \'%1$s\'</string>
     <string name="error_prompt">Error performing search</string>
     <string name="title_activity_photo_viewer">PhotoViewer</string>
     <string name="share_prompt">Share image url to...</string>
     <string name="search_title">Search</string>
-    <string name="server_error">API limit reached!</string>
-    <string name="network_error">Unable connect to server!</string>
+    <string name="server_error">API Error!</string>
+    <string name="network_error">Unable to connect to the server!</string>
     <string name="transition_image">transition</string>
+    <string name="search_failed">Search Failed</string>
 </resources>

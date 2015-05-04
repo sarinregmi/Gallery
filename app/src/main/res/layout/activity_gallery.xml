@@ -4,15 +4,58 @@
     android:layout_height="match_parent"
     tools:context=".GalleryActivity">
 
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        style="@android:style/Widget.Holo.Light.ProgressBar.Inverse"
-        android:layout_width="wrap_content"
+    <Toolbar
+        android:id="@+id/toolbar"
         android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        android:animateLayoutChanges="true"/>
+        android:layout_width="match_parent"
+        android:minHeight="?android:attr/actionBarSize"
+        android:background="?android:attr/colorPrimaryDark"
+        android:elevation="4dp">
+
+        <RelativeLayout
+            android:id="@+id/header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:animateLayoutChanges="true">
+            <SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="25dp"
+                android:translationX="-3dp"
+                android:paddingRight="30dp"
+                android:queryHint="@string/search_image"
+                android:layout_centerHorizontal="true"
+                android:iconifiedByDefault="false"
+                android:background="@android:drawable/editbox_dropdown_light_frame">
+            </SearchView>
+
+            <TextView
+                android:id="@+id/status_prompt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:visibility="gone"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/searchView"
+                />
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignRight="@id/searchView"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="9dp"
+                android:maxHeight="30dp"
+                android:minHeight="30dp"
+                android:visibility="invisible"
+                android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
+    </Toolbar>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/image_recycler_view"
@@ -20,6 +63,6 @@
         android:layout_marginLeft="@dimen/activity_vertical_margin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scrollbars="vertical"/>
-
+        android:scrollbars="vertical"
+        android:layout_below="@id/toolbar"/>
 </RelativeLayout>
